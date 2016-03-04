@@ -8,7 +8,6 @@ var horz_spacing=brickWidth/10;
 var vert_spacing=brickHeight/10;
 BrickRows=5;
 BrickColumns=width/(brickWidth+horz_spacing);
-alert(BrickColumns);
 for(var i=0;i<BrickColumns;i++)
 {
 	BrickArray[i]=[];
@@ -19,6 +18,7 @@ for(var i=0;i<BrickColumns;i++)
 	BrickArray[i][j].height=brickHeight;
 	BrickArray[i][j].X=i*(brickWidth+vert_spacing);
 	BrickArray[i][j].Y=j*(brickHeight+horz_spacing);
+	BrickArray[i][j].state=true;
 	}	
 }
 }
@@ -91,11 +91,43 @@ function draw_bricks()
 	{
 		for(var j=0;j<BrickRows;j++)
 		{
+			if(BrickArray[i][j].state==true)
+			{
 			ctx.fillRect(BrickArray[i][j].X,BrickArray[i][j].Y,BrickArray[i][j].width,BrickArray[i][j].height);
+			}
 		}
 	}
 	ctx.closePath();
 	ctx.restore();
+}
+function DetectBricks()
+{
+	var temp,flag=0;
+	for(var i=0;i<BrickColumns;i++)
+	{
+		for(var j=0;j<BrickRows;j++)
+		{
+			temp=BrickArray[i][j];
+			if(temp.state==true)
+			{
+			if(ball.x>=temp.X & ball.x<=temp.X+temp.width & ball.y>=temp.Y &ball.y<=temp.Y+temp.height)
+			{
+				y_speed=-y_speed;
+				if(y_speed>=0)
+				{
+					y_speed+=1;
+				}
+				BrickArray[i][j].state=false;
+				flag=1;
+				break;
+			}
+			if(flag==1)
+			{
+				break;
+			}
+			}
+		}
+	}
 }
 function draw()
 {
@@ -103,15 +135,16 @@ function draw()
 	draw_ball();
 	draw_paddle();
 	draw_bricks();
+	DetectBricks();
 if(ball.x+ball.radius>=width || ball.x-ball.radius<=0)
 {
 	x_speed=-x_speed;
 }
-if(ball.y-ball.radius<=0||(ball.x+ball.radius>=paddle.start_point & ball.x+ball.radius<=paddle.start_point+paddle.width & y_speed>0 & ball.y+ball.radius==paddle.y))
+if(ball.y-ball.radius<=0||(ball.x+ball.radius>=paddle.start_point & ball.x+ball.radius<=paddle.start_point+paddle.width & y_speed>0 & ball.y+ball.radius>=paddle.y))
 {
 	y_speed=-y_speed;
 }
-else if(ball.x-ball.radius>=paddle.start_point & ball.x-ball.radius<=paddle.start_point+paddle.width & ball.y+ball.radius==paddle.y)
+else if(ball.x-ball.radius>=paddle.start_point & ball.x-ball.radius<=paddle.start_point+paddle.width & ball.y+ball.radius>=paddle.y)
 {
 	y_speed=-y_speed;
 }
@@ -119,7 +152,7 @@ if(ball.y+ball.radius>=height)
 {
 	alert('You lost!');
 	exit(1);
-}	
+}
 ball.x+=x_speed*Math.cos(angle);
 ball.y+=y_speed*Math.sin(angle);
 if(right_arrow & paddle.start_point+paddle.width<=width)
@@ -130,7 +163,6 @@ if(left_arrow & paddle.start_point>0)
 {
 	paddle.start_point-=5;
 }
-
 requestAnimationFrame(draw);
 }
 canvas_create();
